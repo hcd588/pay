@@ -1,0 +1,226 @@
+{
+  "log": {
+    "error": "/tmp/syslog.log",
+    "loglevel": "error"
+  },
+  "inbounds": [
+    {
+      "port": 1088,
+      "listen": "0.0.0.0",
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth",
+        "udp": true,
+        "ip": "127.0.0.1"
+      },
+      "tag": "local_1088",
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls"
+        ]
+      }
+    },
+    {
+      "port": "1099",
+      "listen": "0.0.0.0",
+      "protocol": "dokodemo-door",
+      "settings": {
+        "network": "tcp,udp",
+        "timeout": 30,
+        "followRedirect": true
+      },
+      "tag": "redir_1099",
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls"
+        ]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "settings": {},
+      "tag": "direct",
+      "streamSettings": {
+        "sockopt": {
+          "mark": 255
+        }
+      }
+    },
+    {
+      "protocol": "vmess",
+      "settings": {
+        "vnext": [
+          {
+            "address": "jp1.vpnnets.net",
+            "port": 10559,
+            "users": [
+              {
+                "id": "a76858d1-5f06-4701-f09a-c9e4b65d13f4",
+                "alterId": 64,
+                "security": "auto"
+              }
+            ]
+          }
+        ]
+      },
+      "tag": "outbound_1",
+      "streamSettings": {
+        "network": "kcp",
+        "security": "none",
+        "tlsSettings": {},
+        "tcpSettings": {
+          "type": "none",
+          "request": {
+            "path": [
+              "/"
+            ],
+            "headers": {
+              "Host": []
+            }
+          }
+        },
+        "kcpSettings": {
+          "header": {
+            "type": "utp"
+          }
+        },
+        "wsSettings": {
+          "path": "/",
+          "headers": {}
+        },
+        "httpSettings": {
+          "host": [
+            "v2ray.com"
+          ],
+          "path": "/"
+        },
+        "dsSettings": {},
+        "quicSettings": {
+          "security": "none",
+          "key": "",
+          "header": {
+            "type": "none"
+          }
+        },
+        "sockopt": {
+          "mark": 255
+        }
+      }
+    },
+    {
+      "protocol": "blackhole",
+      "settings": {},
+      "tag": "blocked",
+      "streamSettings": {
+        "sockopt": {
+          "mark": 255
+        }
+      }
+    },
+    {
+      "protocol": "dns",
+      "tag": "dns_out"
+    }
+  ],
+  "dns": {
+    "servers": [
+      {
+        "address": "8.8.8.8",
+        "port": 53,
+        "domains": [
+          "domain:vpnnets.com",
+          "domain:vpnnets.net",
+          "geosite:google",
+          "geosite:geolocation-!cn"
+        ]
+      },
+      {
+        "address": "114.114.114.114",
+        "port": 53,
+        "domains": [
+          "geosite:cn"
+        ]
+      },
+      "8.8.8.8",
+      "8.8.4.4",
+      "localhost"
+    ]
+  },
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "balancers": [],
+    "rules": [
+      {
+        "type": "field",
+        "outboundTag": "blocked",
+        "domain": [
+          "geosite:category-ads-all"
+        ]
+      },
+      {
+        "type": "field",
+        "ip": [
+          "127.0.0.0/8",
+          "::1/128"
+        ],
+        "outboundTag": "blocked"
+      },
+      {
+        "type": "field",
+        "ip": [
+          "8.8.8.8",
+          "8.8.4.4",
+          "208.67.222.222",
+          "208.67.220.220",
+          "1.1.1.1",
+          "1.0.0.1"
+        ],
+        "outboundTag": "outbound_1"
+      },
+      {
+        "type": "field",
+        "ip": [
+          "1.2.3.4",
+          "1.2.3.4",
+          "1.2.3.4",
+          "45.32.62.205",
+          "geoip:private",
+          "100.100.100.100/32",
+          "188.188.188.188/32",
+          "110.110.110.110/32"
+        ],
+        "outboundTag": "direct"
+      },
+      {
+        "type": "field",
+        "inboundTag": [
+          "local_1088"
+        ],
+        "outboundTag": "outbound_1"
+      },
+      {
+        "type": "field",
+        "domain": [
+          "domain:baidu.com",
+          "domain:weixin.qq.com",
+          "domain:alipay.com",
+          "geosite:cn"
+        ],
+        "outboundTag": "outbound_1"
+      },
+      {
+        "type": "field",
+        "ip": [
+          "geoip:cn"
+        ],
+        "outboundTag": "outbound_1"
+      }
+    ]
+  }
+}
